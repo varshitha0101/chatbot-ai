@@ -24,27 +24,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python dependencies from builder
-COPY --from=builder /root/.local /root/.local
-
-# Add local pip to PATH
-ENV PATH=/root/.local/bin:$PATH
-
-# Copy application code
-COPY backend ./backend
-COPY wsgi.py .
-COPY gunicorn_config.py .
-
 # Create non-root user for security
-RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app
+RUN useradd -m -u 1000 appuser
 
-# Create necessary directories for logs
-RUN mkdir -p /var/log/chatbot /var/run && \
-    chown -R appuser:appuser /var/log/chatbot /var/run
+# Copy Python dependencies from builder, ensuring correct ownership
+COPY --from=builder --chown=appuser:appuser /root/.local /home/appuser/.local
 
 # Switch to non-root user
 USER appuser
+
+# Add user's local pip to PATH
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+# Copy application code
+COPY --chown=appuser:appuser backend ./backend
+COPY --chown=appuser:appuser wsgi.py .
+COPY --chown=appuser:appuser gunicorn_config.py .
+
+# Create necessary directories for logs
+RUN mkdir -p /var/log/chatbot /var/run
 
 # Expose port
 EXPOSE 5000
@@ -54,5 +52,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/ || exit 1
 
 # Run Gunicorn
-# Run Gunicorn
-CMD ["/usr/bin/python3", "-m", "gunicorn", "-c", "gunicorn_config.py", "wsgi:app"]
+CMD ["python", "-m", "gunicorn", "-c", "gunicorn_config.py", "wsgi:app"]

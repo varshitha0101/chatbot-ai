@@ -54,4 +54,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/ || exit 1
 
 # Run Gunicorn
-CMD ["gunicorn", "-c", "gunicorn_config.py", "wsgi:app"]
+CMD ["python", "-m", "gunicorn", "-c", "gunicorn_config.py", "wsgi:app"]

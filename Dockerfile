@@ -55,4 +55,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Run Gunicorn
 # Run Gunicorn
-CMD ["python", "-m", "gunicorn", "-c", "gunicorn_config.py", "wsgi:app"]
+CMD ["/usr/bin/python3", "-m", "gunicorn", "-c", "gunicorn_config.py", "wsgi:app"]

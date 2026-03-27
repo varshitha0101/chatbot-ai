@@ -1,0 +1,86 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+.env_backup
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+logs/
+*.log
+crash_log*.txt
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+*.cert
+ssl/
+
+# Dependencies (if installed globally)
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+*.tar.gz
+
+# Docker
+.docker/
+
+# Temporary files
+*.tmp
+*.temp
+temp/

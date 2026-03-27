@@ -1,0 +1,12 @@
+{
+  "build": {
+    "builder": "dockerfile"
+  },
+  "deploy": {
+    "startCommand": "gunicorn -c gunicorn_config.py wsgi:app",
+    "restartPolicyMaxRetries": 5,
+    "restartPolicyWindow": 600,
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 30
+  }
+}

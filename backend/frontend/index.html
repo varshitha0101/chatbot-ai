@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="MindfulAI – CBT-powered mental wellness chatbot with real-time emotion detection, distortion analysis, and personal analytics." />
+    <title>MindfulAI – CBT Mental Wellness Chatbot</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ============================================================
+       AUTH OVERLAY (Login / Register)
+  ============================================================ -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-bg-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+
+        <div class="auth-card" id="authCard">
+            <!-- Logo -->
+            <div class="auth-logo">
+                <div class="logo-icon"><i data-lucide="brain-circuit"></i></div>
+                <span class="logo-text">MindfulAI</span>
+            </div>
+            <p class="auth-tagline">Your CBT-powered mental wellness companion</p>
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="loginTab" onclick="switchTab('login')">Sign In</button>
+                <button class="auth-tab" id="registerTab" onclick="switchTab('register')">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <i data-lucide="user"></i>
+                    <input type="text" id="loginUserId" placeholder="User ID" required autocomplete="username" />
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="loginPassword" placeholder="Password" required
+                        autocomplete="current-password" />
+                </div>
+                <button type="submit" class="btn-primary" id="loginBtn">
+                    <span>Sign In</span>
+                    <i data-lucide="arrow-right"></i>
+                </button>
+                <div id="loginError" class="auth-error hidden"></div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form hidden" onsubmit="handleRegister(event)">
+                <div class="input-group">
+                    <i data-lucide="user-plus"></i>
+                    <input type="text" id="regUserId" placeholder="Choose a User ID" required autocomplete="username" />
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="regPassword" placeholder="Create a Password" required
+                        autocomplete="new-password" />
+                </div>
+                <button type="submit" class="btn-primary" id="registerBtn">
+                    <span>Create Account</span>
+                    <i data-lucide="arrow-right"></i>
+                </button>
+                <div id="registerError" class="auth-error hidden"></div>
+                <div id="registerSuccess" class="auth-success hidden"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+       MAIN APP (shown after auth)
+  ============================================================ -->
+    <div id="mainApp" class="main-app hidden">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon-sm"><i data-lucide="brain-circuit"></i></div>
+                <span class="logo-text-sm">MindfulAI</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" id="nav-chat" onclick="showPage('chat')">
+                    <i data-lucide="message-circle"></i>
+                    <span>Chat</span>
+                </button>
+                <button class="nav-item" id="nav-activities" onclick="showPage('activities')">
+                    <i data-lucide="compass"></i>
+                    <span>Activity Spaces</span>
+                </button>
+                <button class="nav-item" id="nav-tools" onclick="showPage('tools')">
+                    <i data-lucide="zap"></i>
+                    <span>Quick Tools</span>
+                </button>
+                <button class="nav-item" id="nav-journal" onclick="showPage('journal')">
+                    <i data-lucide="book-open"></i>
+                    <span>Thought Journal</span>
+                </button>
+                <button class="nav-item" id="nav-analytics" onclick="showPage('analytics')">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Analytics</span>
+                </button>
+                <button class="nav-item" id="nav-progress" onclick="showPage('progress')">
+                    <i data-lucide="trophy"></i>
+                    <span>Progress</span>
+                </button>
+                <button class="nav-item" id="nav-history" onclick="showPage('history')">
+                    <i data-lucide="clock"></i>
+                    <span>History</span>
+                </button>
+                <button class="nav-item" id="nav-insights" onclick="showPage('insights')">
+                    <i data-lucide="lightbulb"></i>
+                    <span>Insights</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-badge">
+                    <div class="user-avatar" id="sidebarAvatar">U</div>
+                    <span class="user-name" id="sidebarUsername">User</span>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()" title="Sign out">
+                    <i data-lucide="log-out"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MOBILE TOP BAR -->
+        <header class="mobile-header">
+            <button class="menu-btn" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
+            <span class="mobile-logo">MindfulAI</span>
+            <button class="logout-btn-sm" onclick="handleLogout()"><i data-lucide="log-out"></i></button>
+        </header>
+
+        <!-- PAGE CONTAINER -->
+        <main class="page-container">
+
+            <!-- ===== CHAT PAGE ===== -->
+            <section class="page active" id="page-chat">
+                <div class="chat-layout">
+                    <!-- Chat Messages -->
+                    <div class="chat-window" id="chatWindow">
+                        <div class="chat-welcome">
+                            <div class="welcome-icon"><i data-lucide="brain-circuit"></i></div>
+                            <h2>Hello, <span id="welcomeName">friend</span> 👋</h2>
+                            <p>I'm your CBT companion. Share what's on your mind — I'll help you explore your emotions
+                                and thinking patterns with care.</p>
+                            <div class="quick-prompts">
+                                <button class="quick-prompt" onclick="usePrompt(this)">I've been feeling really anxious
+                                    lately</button>
+                                <button class="quick-prompt" onclick="usePrompt(this)">I feel like nothing ever goes
+                                    right for me</button>
+                                <button class="quick-prompt" onclick="usePrompt(this)">I had a great day today!</button>
+                                <button class="quick-prompt" onclick="usePrompt(this)">I keep thinking the worst will
+                                    happen</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emotion Indicator Bar -->
+                    <div class="emotion-bar" id="emotionBar" style="display:none;">
+                        <div class="emotion-pill" id="emotionPill">
+                            <span id="emotionLabel">😐 Detecting...</span>
+                        </div>
+                        <div class="intensity-badge" id="intensityBadge"></div>
+                        <div class="distortion-tag" id="distortionTag"></div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="chat-input-area">
+                        <div class="chat-input-wrapper">
+                            <textarea id="chatInput" placeholder="Share how you're feeling..." rows="1"
+                                onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                                <i data-lucide="send"></i>
+                            </button>
+                        </div>
+                        <p class="input-hint">Press Enter to send · Shift+Enter for new line</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== ANALYTICS PAGE ===== -->
+            <section class="page" id="page-analytics">
+                <div class="page-header">
+                    <h1 class="page-title">Analytics</h1>
+                    <div class="page-actions">
+                        <button class="refresh-btn" onclick="loadAllAnalytics()">
+                            <i data-lucide="refresh-cw"></i> Refresh
+                        </button>
+                        <button class="export-btn" onclick="openExportModal()">
+                            <i data-lucide="download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Session Stats Bar -->
+                <div class="session-stats-bar" id="sessionStatsBar">
+                    <div class="session-stat">
+                        <i data-lucide="message-circle"></i>
+                        <div>
+                            <span class="session-stat-value" id="sessionMsgCount">0</span>
+                            <span class="session-stat-label">This Session</span>
+                        </div>
+                    </div>
+                    <div class="session-stat">
+                        <i data-lucide="heart-pulse"></i>
+                        <div>
+                            <span class="session-stat-value" id="sessionEmotion">—</span>
+                            <span class="session-stat-label">Current Mood</span>
+                        </div>
+                    </div>
+                    <div class="session-stat">
+                        <i data-lucide="clock"></i>
+                        <div>
+                            <span class="session-stat-value" id="sessionDuration">00:00</span>
+                            <span class="session-stat-label">Duration</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stat Cards Row -->
+                <div class="stat-cards" id="statCards">
+                    <div class="stat-card" id="statTotal">
+                        <div class="stat-icon" style="--clr:#8b5cf6"><i data-lucide="messages-square"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statTotalVal">–</span>
+                            <span class="stat-label">Total Messages</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="statDominantEmotion">
+                        <div class="stat-icon" style="--clr:#ec4899"><i data-lucide="heart-pulse"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statDomEmotionVal">–</span>
+                            <span class="stat-label">Top Emotion</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="statDominantDistortion">
+                        <div class="stat-icon" style="--clr:#f59e0b"><i data-lucide="alert-triangle"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statDomDistortionVal">–</span>
+                            <span class="stat-label">Top Pattern</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="statDaysActive">
+                        <div class="stat-icon" style="--clr:#10b981"><i data-lucide="calendar-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statDaysActiveVal">–</span>
+                            <span class="stat-label">Days Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3>Emotion Distribution</h3>
+                            <span class="chart-badge">Doughnut</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="emotionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3>Thinking Patterns</h3>
+                            <span class="chart-badge">Bar</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="distortionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card chart-wide">
+                        <div class="chart-card-header">
+                            <h3>Daily Emotion Trend</h3>
+                            <span class="chart-badge">Line</span>
+                        </div>
+                        <div class="chart-wrapper chart-wrapper-tall">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card chart-wide">
+                        <div class="chart-card-header">
+                            <h3>Emotion–Pattern Correlation</h3>
+                            <span class="chart-badge">Heatmap</span>
+                        </div>
+                        <div id="correlationHeatmap" class="heatmap-container">
+                            <p class="no-data">No correlation data yet</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== HISTORY PAGE ===== -->
+            <section class="page" id="page-history">
+                <div class="page-header">
+                    <h1 class="page-title">Conversation History</h1>
+                    <div class="history-controls">
+                        <div class="history-search">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="historySearch" placeholder="Search messages…"
+                                oninput="filterHistory()" />
+                        </div>
+                        <button class="export-btn" onclick="openExportModal()">
+                            <i data-lucide="download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-filters">
+                    <button class="filter-btn active" onclick="filterByEmotion('all', this)">All</button>
+                    <button class="filter-btn" onclick="filterByEmotion('anxiety', this)">😰 Anxiety</button>
+                    <button class="filter-btn" onclick="filterByEmotion('sadness', this)">😢 Sadness</button>
+                    <button class="filter-btn" onclick="filterByEmotion('anger', this)">😠 Anger</button>
+                    <button class="filter-btn" onclick="filterByEmotion('positive', this)">😊 Positive</button>
+                    <button class="filter-btn" onclick="filterByEmotion('uncertain', this)">🤔 Uncertain</button>
+                </div>
+
+                <div id="historyList" class="history-list">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading history…</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== INSIGHTS PAGE ===== -->
+            <section class="page" id="page-insights">
+                <div class="page-header">
+                    <h1 class="page-title">Personal Insights</h1>
+                </div>
+
+                <div class="insights-grid">
+                    <!-- CBT Tips -->
+                    <div class="insight-card">
+                        <div class="insight-card-header">
+                            <i data-lucide="book-open" class="insight-icon"></i>
+                            <h3>CBT Strategies</h3>
+                        </div>
+                        <div id="cbtTips" class="tips-list"></div>
+                    </div>
+
+                    <!-- Distortion Explainer -->
+                    <div class="insight-card">
+                        <div class="insight-card-header">
+                            <i data-lucide="info" class="insight-icon"></i>
+                            <h3>Understanding Your Patterns</h3>
+                        </div>
+                        <div id="distortionExplainer" class="distortion-explainer-list"></div>
+                    </div>
+
+                    <!-- Progress Tracker -->
+                    <div class="insight-card insight-wide">
+                        <div class="insight-card-header">
+                            <i data-lucide="trending-up" class="insight-icon"></i>
+                            <h3>Wellness Progress</h3>
+                        </div>
+                        <div id="wellnessProgress" class="wellness-bars"></div>
+                    </div>
+
+                    <!-- Crisis Resources -->
+                    <div class="insight-card insight-wide crisis-card">
+                        <div class="insight-card-header">
+                            <i data-lucide="phone-call" class="insight-icon crisis-icon"></i>
+                            <h3>Support Resources</h3>
+                        </div>
+                        <div class="crisis-resources">
+                            <div class="resource-item">
+                                <span class="resource-name">iCall (India)</span>
+                                <a href="tel:9152987821" class="resource-link">9152987821</a>
+                            </div>
+                            <div class="resource-item">
+                                <span class="resource-name">Vandrevala Foundation</span>
+                                <a href="tel:18602662345" class="resource-link">1860-2662-345</a>
+                            </div>
+                            <div class="resource-item">
+                                <span class="resource-name">NIMHANS</span>
+                                <a href="tel:08046110007" class="resource-link">080-46110007</a>
+                            </div>
+                            <div class="resource-item">
+                                <span class="resource-name">Crisis Text Line (US)</span>
+                                <span class="resource-link" style="cursor:default;">Text HOME to 741741</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== ACTIVITY SPACES PAGE ===== -->
+            <section class="page" id="page-activities">
+                <div class="page-header">
+                    <h1 class="page-title">Activity Spaces</h1>
+                    <p class="page-subtitle">Focused support for specific mental health topics</p>
+                </div>
+                <div class="activities-grid">
+                    <div class="activity-card" onclick="openActivitySpace('stress')" data-activity="stress">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, #d97706, #f59e0b);">
+                            <i data-lucide="wind"></i>
+                        </div>
+                        <h3>Stress Management</h3>
+                        <p>Find calm in chaos. Techniques for managing daily stress.</p>
+                        <div class="activity-arrow"><i data-lucide="arrow-right"></i></div>
+                    </div>
+                    
+                    <div class="activity-card" onclick="openActivitySpace('anxiety')" data-activity="anxiety">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                            <i data-lucide="heart-pulse"></i>
+                        </div>
+                        <h3>Anxiety Support</h3>
+                        <p>Ground yourself. Tools to manage anxious thoughts and feelings.</p>
+                        <div class="activity-arrow"><i data-lucide="arrow-right"></i></div>
+                    </div>
+                    
+                    <div class="activity-card" onclick="openActivitySpace('mood')" data-activity="mood">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, #059669, #10b981);">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <h3>Mood Boosting</h3>
+                        <p>Lift your spirits. Activities and insights for better mood.</p>
+                        <div class="activity-arrow"><i data-lucide="arrow-right"></i></div>
+                    </div>
+                    
+                    <div class="activity-card" onclick="openActivitySpace('fear')" data-activity="fear">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, #db2777, #f43f5e);">
+                            <i data-lucide="shield"></i>
+                        </div>
+                        <h3>Fear Processing</h3>
+                        <p>Face your fears. A safe space to explore and process fear.</p>
+                        <div class="activity-arrow"><i data-lucide="arrow-right"></i></div>
+                    </div>
+                    
+                    <div class="activity-card" onclick="openActivitySpace('sleep')" data-activity="sleep">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, #0891b2, #06b6d4);">
+                            <i data-lucide="moon"></i>
+                        </div>
+                        <h3>Sleep & Rest</h3>
+                        <p>Rest well. Support for better sleep and evening wind-down.</p>
+                        <div class="activity-arrow"><i data-lucide="arrow-right"></i></div>
+                    </div>
+                    
+                    <div class="activity-card" onclick="openActivitySpace('relationships')" data-activity="relationships">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, #db2777, #ec4899);">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <h3>Relationship Support</h3>
+                        <p>Connect better. Navigate relationship challenges with clarity.</p>
+                        <div class="activity-arrow"><i data-lucide="arrow-right"></i></div>
+                    </div>
+                    
+                    <div class="activity-card" onclick="openActivitySpace('confidence')" data-activity="confidence">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, #eab308, #facc15);">
+                            <i data-lucide="star"></i>
+                        </div>
+                        <h3>Self-Confidence</h3>
+                        <p>Believe in yourself. Build confidence and self-worth.</p>
+                        <div class="activity-arrow"><i data-lucide="arrow-right"></i></div>
+                    </div>
+                    
+                    <div class="activity-card" onclick="openActivitySpace('focus')" data-activity="focus">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, #0d9488, #14b8a6);">
+                            <i data-lucide="target"></i>
+                        </div>
+                        <h3>Focus & Clarity</h3>
+                        <p>Clear your mind. Improve focus and mental clarity.</p>
+                        <div class="activity-arrow"><i data-lucide="arrow-right"></i></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== QUICK TOOLS PAGE ===== -->
+            <section class="page" id="page-tools">
+                <div class="page-header">
+                    <h1 class="page-title">Quick Tools</h1>
+                    <p class="page-subtitle">Instant techniques for emotional regulation</p>
+                </div>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="openDailyCheckin()">
+                        <div class="tool-icon breathing-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);">
+                            <i data-lucide="sun"></i>
+                        </div>
+                        <h3>Daily Check-In</h3>
+                        <p>Track your daily mood and wellbeing</p>
+                    </div>
+                    <div class="tool-card" onclick="openBreathingModal()">
+                        <div class="tool-icon breathing-icon">
+                            <i data-lucide="wind"></i>
+                        </div>
+                        <h3>Breathing Exercises</h3>
+                        <p>Guided breathing for calm and focus</p>
+                    </div>
+                    <div class="tool-card" onclick="showGroundingTechnique()">
+                        <div class="tool-icon grounding-icon">
+                            <i data-lucide="anchor"></i>
+                        </div>
+                        <h3>5-4-3-2-1 Grounding</h3>
+                        <p>Sensory grounding for anxiety relief</p>
+                    </div>
+                    <div class="tool-card" onclick="showProgressiveRelaxation()">
+                        <div class="tool-icon relax-icon">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <h3>Progressive Muscle Relaxation</h3>
+                        <p>Release physical tension systematically</p>
+                    </div>
+                    <div class="tool-card" onclick="showEmergencyCalming()">
+                        <div class="tool-icon emergency-icon">
+                            <i data-lucide="zap"></i>
+                        </div>
+                        <h3>Emergency Calming</h3>
+                        <p>TIPP technique for intense emotions</p>
+                    </div>
+                    <div class="tool-card" onclick="showSelfCompassion()">
+                        <div class="tool-icon compassion-icon">
+                            <i data-lucide="heart"></i>
+                        </div>
+                        <h3>Self-Compassion Break</h3>
+                        <p>Kindness to yourself in difficult moments</p>
+                    </div>
+                    <div class="tool-card" onclick="showThoughtDefusion()">
+                        <div class="tool-icon defusion-icon">
+                            <i data-lucide="cloud"></i>
+                        </div>
+                        <h3>Thought Defusion</h3>
+                        <p>Distance from unhelpful thoughts</p>
+                    </div>
+                </div>
+                <div id="toolContent" class="tool-content-area hidden"></div>
+            </section>
+
+            <!-- ===== THOUGHT JOURNAL PAGE ===== -->
+            <section class="page" id="page-journal">
+                <div class="page-header">
+                    <h1 class="page-title">Thought Journal</h1>
+                    <button class="btn-primary" onclick="openNewJournalEntry()">
+                        <i data-lucide="plus"></i> New Entry
+                    </button>
+                </div>
+                <div class="journal-content">
+                    <div class="journal-stats">
+                        <div class="stat-box">
+                            <div class="stat-value" id="journalTotalEntries">0</div>
+                            <div class="stat-label">Total Entries</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="journalDistortionsIdentified">0</div>
+                            <div class="stat-label">Distortions Identified</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="journalReframesWritten">0</div>
+                            <div class="stat-label">Reframes Created</div>
+                        </div>
+                    </div>
+                    <div class="journal-entries" id="journalEntries">
+                        <div class="empty-state">
+                            <i data-lucide="book-open"></i>
+                            <h3>No journal entries yet</h3>
+                            <p>Start recording your thoughts and challenging distortions</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== PROGRESS & ACHIEVEMENTS PAGE ===== -->
+            <section class="page" id="page-progress">
+                <div class="page-header">
+                    <h1 class="page-title">Progress & Achievements</h1>
+                    <p class="page-subtitle">Celebrating your growth journey</p>
+                </div>
+                <div class="progress-content">
+                    <!-- Achievements -->
+                    <div class="achievements-grid" id="achievementsGrid">
+                        <!-- Will be populated dynamically -->
+                    </div>
+
+                    <!-- Progress Stats -->
+                    <div class="progress-stats-grid">
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-icon">
+                                <i data-lucide="calendar"></i>
+                            </div>
+                            <div class="progress-stat-content">
+                                <div class="progress-stat-value" id="daysActive">0</div>
+                                <div class="progress-stat-label">Days Active</div>
+                            </div>
+                        </div>
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-icon">
+                                <i data-lucide="message-circle"></i>
+                            </div>
+                            <div class="progress-stat-content">
+                                <div class="progress-stat-value" id="totalConversations">0</div>
+                                <div class="progress-stat-label">Conversations</div>
+                            </div>
+                        </div>
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-icon">
+                                <i data-lucide="wind"></i>
+                            </div>
+                            <div class="progress-stat-content">
+                                <div class="progress-stat-value" id="techniquesUsed">0</div>
+                                <div class="progress-stat-label">Techniques Practiced</div>
+                            </div>
+                        </div>
+                        <div class="progress-stat-card">
+                            <div class="progress-stat-icon">
+                                <i data-lucide="trending-up"></i>
+                            </div>
+                            <div class="progress-stat-content">
+                                <div class="progress-stat-value" id="checkInStreak">0</div>
+                                <div class="progress-stat-label">Day Streak</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mood Tracking Chart -->
+                    <div class="mood-chart-card">
+                        <h3>
+                            <i data-lucide="smile"></i>
+                            Mood Trends (Last 30 Days)
+                        </h3>
+                        <div class="mood-chart-container" id="moodChartContainer">
+                            <canvas id="moodChart" height="250"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Level Progress -->
+                    <div class="level-progress-card">
+                        <h3>Wellness Level</h3>
+                        <div class="level-info">
+                            <span class="current-level" id="currentLevel">Beginner</span>
+                            <span class="level-xp" id="levelXP">0 / 100 XP</span>
+                        </div>
+                        <div class="level-progress-bar">
+                            <div class="level-progress-fill" id="levelProgressFill" style="width: 0%"></div>
+                        </div>
+                        <p class="level-next">Next level: Practitioner (100 XP)</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ============================================================
+       BREATHING EXERCISE MODAL
+  ============================================================ -->
+    <div id="breathingModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeBreathingModal()"></div>
+        <div class="breathing-modal-content">
+            <div class="breathing-modal-header">
+                <h3>Guided Breathing Exercise</h3>
+                <button onclick="closeBreathingModal()" class="modal-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="breathing-modal-body">
+                <div class="breathing-selector">
+                    <button class="breathing-option active" onclick="selectBreathingType('478')" data-type="478">
+                        <strong>4-7-8 Breathing</strong>
+                        <span>Calming • Anxiety Relief</span>
+                    </button>
+                    <button class="breathing-option" onclick="selectBreathingType('box')" data-type="box">
+                        <strong>Box Breathing</strong>
+                        <span>Focus • Stress Management</span>
+                    </button>
+                    <button class="breathing-option" onclick="selectBreathingType('deep')" data-type="deep">
+                        <strong>Deep Breathing</strong>
+                        <span>Relaxation • Sleep</span>
+                    </button>
+                </div>
+                <div class="breathing-visual" id="breathingVisual">
+                    <div class="breathing-circle" id="breathingCircle"></div>
+                    <div class="breathing-instruction" id="breathingInstruction">Click "Start" to begin</div>
+                    <div class="breathing-counter" id="breathingCounter">0 / 5 cycles</div>
+                </div>
+                <div class="breathing-controls">
+                    <button id="breathingStartBtn" class="btn-primary" onclick="startBreathing()">
+                        <i data-lucide="play"></i> Start
+                    </button>
+                    <button id="breathingStopBtn" class="btn-secondary hidden" onclick="stopBreathing()">
+                        <i data-lucide="pause"></i> Stop
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+       DAILY CHECK-IN MODAL
+  ============================================================ -->
+    <div id="dailyCheckinModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeDailyCheckin()"></div>
+        <div class="checkin-modal-content">
+            <div class="checkin-modal-header">
+                <h3>Daily Check-In</h3>
+                <button onclick="closeDailyCheckin()" class="modal-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="checkin-modal-body">
+                <p class="checkin-question">How are you feeling today?</p>
+                <div class="mood-selector">
+                    <button class="mood-option" onclick="selectMood('great')" data-mood="great">
+                        <span class="mood-emoji">😊</span>
+                        <span class="mood-label">Great</span>
+                    </button>
+                    <button class="mood-option" onclick="selectMood('good')" data-mood="good">
+                        <span class="mood-emoji">🙂</span>
+                        <span class="mood-label">Good</span>
+                    </button>
+                    <button class="mood-option" onclick="selectMood('okay')" data-mood="okay">
+                        <span class="mood-emoji">😐</span>
+                        <span class="mood-label">Okay</span>
+                    </button>
+                    <button class="mood-option" onclick="selectMood('struggling')" data-mood="struggling">
+                        <span class="mood-emoji">😔</span>
+                        <span class="mood-label">Struggling</span>
+                    </button>
+                    <button class="mood-option" onclick="selectMood('difficult')" data-mood="difficult">
+                        <span class="mood-emoji">😢</span>
+                        <span class="mood-label">Difficult</span>
+                    </button>
+                </div>
+                <div class="checkin-notes">
+                    <label for="checkinNotes">Anything you'd like to note?</label>
+                    <textarea id="checkinNotes" placeholder="Optional: What's on your mind today?" rows="3"></textarea>
+                </div>
+                <button class="btn-primary" onclick="submitDailyCheckin()">
+                    <i data-lucide="check"></i> Submit Check-In
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+       THOUGHT JOURNAL ENTRY MODAL
+  ============================================================ -->
+    <div id="journalEntryModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeJournalEntryModal()"></div>
+        <div class="journal-entry-modal-content">
+            <div class="journal-entry-modal-header">
+                <h3>New Thought Record</h3>
+                <button onclick="closeJournalEntryModal()" class="modal-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="journal-entry-modal-body">
+                <div class="journal-entry-step">
+                    <label>1. What's the situation?</label>
+                    <textarea id="journalSituation" placeholder="Describe what happened..." rows="2"></textarea>
+                </div>
+                <div class="journal-entry-step">
+                    <label>2. What automatic thought came up?</label>
+                    <textarea id="journalThought" placeholder="What went through your mind?" rows="3"></textarea>
+                </div>
+                <div class="journal-entry-step">
+                    <label>3. What emotion did you feel?</label>
+                    <select id="journalEmotion">
+                        <option value="">Select emotion...</option>
+                        <option value="anxiety">Anxiety</option>
+                        <option value="sadness">Sadness</option>
+                        <option value="anger">Anger</option>
+                        <option value="fear">Fear</option>
+                        <option value="guilt">Guilt</option>
+                        <option value="shame">Shame</option>
+                    </select>
+                </div>
+                <div class="journal-entry-step">
+                    <label>4. What cognitive distortion might be present?</label>
+                    <select id="journalDistortion">
+                        <option value="">Select if applicable...</option>
+                        <option value="catastrophizing">Catastrophizing</option>
+                        <option value="overgeneralization">Overgeneralization</option>
+                        <option value="mind_reading">Mind Reading</option>
+                        <option value="all_or_nothing">All-or-Nothing Thinking</option>
+                    </select>
+                </div>
+                <div class="journal-entry-step">
+                    <label>5. What's a more balanced thought?</label>
+                    <textarea id="journalReframe" placeholder="Challenge the automatic thought..." rows="3"></textarea>
+                </div>
+                <button class="btn-primary" onclick="saveJournalEntry()">
+                    <i data-lucide="save"></i> Save Entry
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crisis Modal -->
+    <div id="crisisModal" class="crisis-modal hidden">
+        <div class="crisis-modal-content">
+            <div class="crisis-modal-header">
+                <i data-lucide="alert-circle" class="crisis-icon-large"></i>
+                <h2>We're Concerned About You</h2>
+            </div>
+            <div class="crisis-modal-body">
+                <p>It sounds like you may be going through something very serious. Your safety is important.</p>
+                <div class="crisis-resources-urgent">
+                    <h3>Please reach out for immediate support:</h3>
+                    <div class="urgent-contacts">
+                        <a href="tel:9152987821" class="urgent-contact-btn">
+                            <i data-lucide="phone"></i>
+                            <div>
+                                <strong>iCall (India)</strong>
+                                <span>9152987821</span>
+                            </div>
+                        </a>
+                        <a href="tel:18602662345" class="urgent-contact-btn">
+                            <i data-lucide="phone"></i>
+                            <div>
+                                <strong>Vandrevala Foundation</strong>
+                                <span>1860-2662-345</span>
+                            </div>
+                        </a>
+                        <a href="tel:08046110007" class="urgent-contact-btn">
+                            <i data-lucide="phone"></i>
+                            <div>
+                                <strong>NIMHANS</strong>
+                                <span>080-46110007</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="crisis-modal-footer">
+                <button onclick="closeCrisisModal()" class="btn-secondary">I understand</button>
+                <button onclick="closeCrisisModal(); window.location.href='tel:9152987821'" class="btn-crisis">Call Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="export-modal hidden">
+        <div class="export-modal-content">
+            <div class="export-modal-header">
+                <h3>Export Your Data</h3>
+                <button onclick="closeExportModal()" class="modal-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="export-modal-body">
+                <button onclick="exportChatHistory()" class="export-option-btn">
+                    <i data-lucide="message-square"></i>
+                    <div>
+                        <strong>Chat History</strong>
+                        <span>Download all conversations as JSON</span>
+                    </div>
+                </button>
+                <button onclick="exportAnalytics()" class="export-option-btn">
+                    <i data-lucide="bar-chart-3"></i>
+                    <div>
+                        <strong>Analytics Report</strong>
+                        <span>Download emotion & distortion analytics</span>
+                    </div>
+                </button>
+                <button onclick="exportFullData()" class="export-option-btn">
+                    <i data-lucide="database"></i>
+                    <div>
+                        <strong>Complete Data</strong>
+                        <span>Download everything (history + analytics)</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Space Modal -->
+    <div id="activitySpaceModal" class="activity-space-modal hidden">
+        <div class="activity-space-content">
+            <div class="activity-space-header">
+                <div class="activity-header-info">
+                    <div class="activity-icon-header" id="activityIconHeader">
+                        <i data-lucide="compass"></i>
+                    </div>
+                    <div>
+                        <h2 id="activitySpaceTitle">Activity Space</h2>
+                        <p id="activitySpaceDescription">Focused support space</p>
+                    </div>
+                </div>
+                <button onclick="closeActivitySpace()" class="modal-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            
+            <div class="activity-chat-area">
+                <div class="activity-messages" id="activityMessages">
+                    <!-- Messages will appear here -->
+                </div>
+            </div>
+            
+            <div class="activity-quick-prompts" id="activityQuickPrompts">
+                <!-- Quick prompts will appear here -->
+            </div>
+            
+            <div class="activity-input-area">
+                <div class="activity-input-wrapper">
+                    <textarea id="activityInput" placeholder="Share what's on your mind..." rows="2"
+                        onkeydown="handleActivityInputKey(event)"></textarea>
+                    <button class="send-btn" onclick="sendActivityMessage()">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

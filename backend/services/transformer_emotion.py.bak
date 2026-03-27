@@ -1,0 +1,36 @@
+from transformers import pipeline
+
+emotion_pipeline = pipeline(
+    "text-classification",
+    model="j-hartmann/emotion-english-distilroberta-base"
+)
+
+def normalize_label(label):
+    label = label.lower()
+
+    if label in ["fear", "anxiety"]:
+        return "anxiety"
+    elif label in ["joy"]:
+        return "positive"
+    elif label in ["sadness"]:
+        return "sadness"
+    elif label in ["anger"]:
+        return "anger"
+    else:
+        return "uncertain"
+
+
+def detect_emotion_transformer(text, threshold=0.4):
+    result = emotion_pipeline(text)[0]
+
+    raw_label = result["label"]
+    confidence = float(result["score"])
+
+    emotion = normalize_label(raw_label)
+
+    if confidence < threshold:
+        emotion = "uncertain"
+
+    intensity = "high" if confidence > 0.75 else "low"
+
+    return emotion, intensity, round(confidence, 4)
